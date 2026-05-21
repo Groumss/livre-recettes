@@ -575,21 +575,18 @@ Pour tags : 2-4 mots-clés en minuscules (ex: "dessert", "rapide", "végétarien
     else content.push({ type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: fileB64 } });
     content.push({ type: 'text', text: `Extrais la recette de ce fichier.\n\n${jsonInstruction}` });
   } else if (aiTab === 'url') {
-    content.push({ type: 'text', text: `Visite cette URL et extrais la recette : ${url}\n\n${jsonInstruction}` });
+    content.push({ type: 'text', text: `Extrais la recette depuis cette URL : ${url}. Ne visite pas le lien, utilise uniquement les informations que tu connais déjà sur cette recette ou déduis-les de l'URL.\n\n${jsonInstruction}` });
   } else {
     content.push({ type: 'text', text: `Extrais la recette depuis ce texte :\n\n${text}\n\n${jsonInstruction}` });
   }
 
-  const useWebSearch = aiTab === 'url';
   const body = {
     model: 'claude-sonnet-4-5',
     max_tokens: 2000,
     system: sys,
     messages: [{ role: 'user', content }]
   };
-  if (useWebSearch) {
-    body.tools = [{ type: 'web_search_20250305', name: 'web_search' }];
-  }
+  if (aiTab === 'url') body._fetchUrl = url;
 
   try {
     const res = await fetch('/.netlify/functions/claude', {
